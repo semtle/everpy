@@ -14,6 +14,7 @@ HUGE TODO LIST:
 -default = sets a default book
 -read = read the last X notes
 -search = search the notes
+-quick = quick add a new note (uses default title)
 
 When making a new note, should say what is the default notebook
 and how to change it
@@ -21,9 +22,10 @@ and how to change it
 Add a option to "undo"? (Need permission)
 
 finding a way to set a "quick search" for tags
+
 integrations that allow a quick add
 
-
+set default title
 """
 from __future__ import print_function
 import evernote.edam.userstore.constants as UserStoreConstants
