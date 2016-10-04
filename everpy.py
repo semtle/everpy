@@ -33,16 +33,24 @@ import evernote.edam.type.ttypes as Types
 import argparse
 import os
 import dev_keys
+import click
+
 
 from evernote.api.client import EvernoteClient
 
 # Argument passer
-parser = argparse.ArgumentParser()
-parser.add_argument("title", help="Choose a title for your note")
-parser.add_argument("body", help="Choose the message inside the note")
-args = parser.parse_args()
+# parser = argparse.ArgumentParser()
+# parser.add_argument("title", help="Choose a title for your note")
+# parser.add_argument("body", help="Choose the message inside the note")
+# args = parser.parse_args()
 
-def check_version():
+@click.group()
+def cli():
+    pass
+
+
+@cli.command()
+def version():
     """Checks if the lastest version is intalled, if so returns True"""
     version_ok = user_store.checkVersion(
          "Evernote EDAMTest (Python)",
@@ -54,12 +62,40 @@ def check_version():
     if not version_ok:
         exit(1)
 
-def list_books():
+@cli.command()
+def list():
     """prints a list with all books in the account"""
     notebooks = note_store.listNotebooks()
     print("Found ", len(notebooks), " notebooks:")
     for notebook in notebooks:
         print("  * ", notebook.name)
+
+@cli.command()
+def note():
+    """creates a note"""
+
+    print("Creating a new note in the default notebook")
+
+    # To create a new note, simply create a new Note object and fill in
+    # attributes such as the note's title.
+    note = Types.Note()
+    note.title = "Testing Click"
+
+    # The content of an Evernote note is represented using Evernote Markup Language
+    note.content = '<?xml version="1.0" encoding="UTF-8"?>'
+    note.content += '<!DOCTYPE en-note SYSTEM ' \
+        '"http://xml.evernote.com/pub/enml2.dtd">'
+    note.content += '<en-note>Testing click commands<br/>'
+    note.content += '</en-note>'
+
+    # Finally, send the new note to Evernote using the createNote method
+    # The new Note object that is returned will contain server-generated
+    # attributes such as the new note's unique GUID.
+    created_note = note_store.createNote(note)
+
+    print("Successfully created a new note with GUID: ", created_note.guid)
+
+
 
 # Real applications authenticate with Evernote using OAuth, but for the
 # purpose of exploring the API, you can get a developer token that allows
@@ -77,25 +113,5 @@ user_store = client.get_user_store()
 
 note_store = client.get_note_store()
 
-print("Creating a new note in the default notebook")
-
-# To create a new note, simply create a new Note object and fill in
-# attributes such as the note's title.
-note = Types.Note()
-note.title = args.title
-
-# The content of an Evernote note is represented using Evernote Markup Language
-# (ENML). The full ENML specification can be found in the Evernote API Overview
-# at http://dev.evernote.com/documentation/cloud/chapters/ENML.php
-note.content = '<?xml version="1.0" encoding="UTF-8"?>'
-note.content += '<!DOCTYPE en-note SYSTEM ' \
-    '"http://xml.evernote.com/pub/enml2.dtd">'
-note.content += '<en-note>' + args.body + '<br/>'
-note.content += '</en-note>'
-
-# Finally, send the new note to Evernote using the createNote method
-# The new Note object that is returned will contain server-generated
-# attributes such as the new note's unique GUID.
-created_note = note_store.createNote(note)
-
-print("Successfully created a new note with GUID: ", created_note.guid)
+if __name__ == "__main__":
+    cli()
