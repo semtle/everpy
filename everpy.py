@@ -7,14 +7,24 @@
 
 """
 HUGE TODO LIST:
--tag = tags the file
--list = lists of all notes
--books = lists of all notebooks
--notes = adds a new note
--default = sets a default book
--read = read the last X notes
--search = search the notes
--quick = quick add a new note (uses default title)
+
+note = makes a new note
+    -tag = add tags to the file
+    -quick = title is "Quicknote"
+    -book = sets the notebook
+
+list = lists of all notes
+
+books = list of all books
+
+settings = opens up settings options
+    change default notebook
+    change quick title
+
+login = logins
+
+read = read the last X notes (Needs API permission from Evernote)
+search = search the notes
 
 When making a new note, should say what is the default notebook
 and how to change it
@@ -24,25 +34,15 @@ Add a option to "undo"? (Need permission)
 finding a way to set a "quick search" for tags
 
 integrations that allow a quick add
-
-set default title
 """
 from __future__ import print_function
 import evernote.edam.userstore.constants as UserStoreConstants
 import evernote.edam.type.ttypes as Types
-import argparse
-import os
 import dev_keys
 import click
 
 
 from evernote.api.client import EvernoteClient
-
-# Argument passer
-# parser = argparse.ArgumentParser()
-# parser.add_argument("title", help="Choose a title for your note")
-# parser.add_argument("body", help="Choose the message inside the note")
-# args = parser.parse_args()
 
 @click.group()
 def cli():
@@ -71,7 +71,9 @@ def list():
         print("  * ", notebook.name)
 
 @cli.command()
-def note():
+@click.argument("title")
+@click.argument("body")
+def note(title, body):
     """creates a note"""
 
     print("Creating a new note in the default notebook")
@@ -79,14 +81,14 @@ def note():
     # To create a new note, simply create a new Note object and fill in
     # attributes such as the note's title.
     note = Types.Note()
-    note.title = "Testing Click"
+    note.title = title
 
     # The content of an Evernote note is represented using Evernote Markup Language
-    note.content = '<?xml version="1.0" encoding="UTF-8"?>'
-    note.content += '<!DOCTYPE en-note SYSTEM ' \
-        '"http://xml.evernote.com/pub/enml2.dtd">'
-    note.content += '<en-note>Testing click commands<br/>'
-    note.content += '</en-note>'
+    note.content = "<?xml version='1.0' encoding='UTF-8'?>"
+    note.content += "<!DOCTYPE en-note SYSTEM " \
+        "'http://xml.evernote.com/pub/enml2.dtd'>"
+    note.content += "<en-note>" + body + "<br/>"
+    note.content += "</en-note>"
 
     # Finally, send the new note to Evernote using the createNote method
     # The new Note object that is returned will contain server-generated
